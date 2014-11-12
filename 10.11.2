@@ -1,0 +1,34 @@
+const int cham[5] = {1,2,3,4,5};
+const int ledPin[5] = {13,12,11,10,9};
+int buttonState[5] = {0,0,0,0,0};
+int c = 0;
+int j = 0;
+
+void setup()
+{
+ 
+  for(j=0;j<5;j++)
+ { 
+  pinMode(ledPin[j], OUTPUT);
+  pinMode(cham[j], INPUT);
+ }
+}
+
+void loop ()
+{
+  
+   buttonState[c] = digitalRead(cham[c]);
+   if (buttonState[c] == LOW) 
+   {
+     digitalWrite(ledPin[c], HIGH);
+   }
+   else 
+   {
+     digitalWrite(ledPin[c], LOW);
+   }
+   c++;
+   if (c>=5)
+   {
+     c=0;
+   }
+}
