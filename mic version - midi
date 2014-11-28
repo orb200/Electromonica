@@ -1,0 +1,71 @@
+const int pitch[10] = {13,12,11,10,9,8,7,6,5,4};
+const int cham[5];
+const int midi = 2;
+const int button =3;
+boolean blow = 0;
+int j =0;
+int note;
+int lastnote;
+
+void setup()
+{
+	for(j=0;j<10;j++)
+	{
+		pinMode(cham[j],OUTPUT);
+	}
+	pinMode(midi,OUTPUT);
+	pinMode(button,INPUT);
+	Serial.begin(9600);
+}
+
+void loop()
+{
+	note = findnote();
+	if (note == 5)
+		silence();
+	if (note =! lastnote)
+		playnote(note,blow)
+		
+}
+
+void findbutton()
+{
+	if (digitalRead(button) >LOW)
+		blow = TRUE;
+	else
+		blow = FALSE;
+}
+
+void findnote()
+{
+	note = 0;
+	cham[0] = (analogRead(A0)-500);
+	cham[1] = (analogRead(A1)-500);
+	cham[2] = (analogRead(A2)-500);
+	cham[3] = (analogRead(A3)-500);
+	cham[4] = (analogRead(A4)-500);
+	for(j=0;j<5;j++)
+	{
+		if (abs(cham[note]) >= abs(cham[j]))
+			note = j;
+		if (abs(cham[note]) < 550)
+			note = 5;
+	}
+	return note;
+}
+
+void silence()
+{
+	// send end note midi
+}
+
+void playnote(chamber,blow)
+{
+	lastnote = note;
+	// send endnote lastnote
+	if(blow == TRUE)
+		//play blow note on cham[note]
+	else
+		//play suck note on cham[note]
+	
+}
