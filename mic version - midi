@@ -1,11 +1,13 @@
-const int pitch[10] = {13,12,11,10,9,8,7,6,5,4};
+const int pitch[10] = {55,60,64,67,72,59,62,65,69,71};
 const int cham[5];
 const int midi = 2;
-const int button =3;
+const int button = 3;
 boolean blow = 0;
 int j =0;
-int note;
-int lastnote;
+int note =0;
+int lastnote =0;
+const int thresh =50;
+int chamber =0;
 
 void setup()
 {
@@ -18,18 +20,26 @@ void setup()
 	Serial.begin(9600);
 }
 
+
+
 void loop()
 {
+	//determine 1 of 6 conditions (note1,...note5,silence)
 	note = findnote();
+	//if find note returns 5 it signals no chambers have enough volume for notes
 	if (note == 5)
 		silence();
 	if (note =! lastnote)
-		playnote(note,blow)
+		
+		playnote(note,blow); // on each loop program checks to see if note has changed
+				    // if note has not changed no signal is sent in order to 
+				    // prevent continuous note strokes instead of held ones
 		
 }
 
 void findbutton()
 {
+	// determine if the "chromatic button" is active or not to simulate blow/draw
 	if (digitalRead(button) >LOW)
 		blow = TRUE;
 	else
@@ -38,25 +48,32 @@ void findbutton()
 
 void findnote()
 {
-	note = 0;
+
+	//
+	note = 0; 
+	//normalize all chambers so their values are centered to fluctuate around 0
 	cham[0] = (analogRead(A0)-500);
 	cham[1] = (analogRead(A1)-500);
 	cham[2] = (analogRead(A2)-500);
 	cham[3] = (analogRead(A3)-500);
 	cham[4] = (analogRead(A4)-500);
-	for(j=0;j<5;j++)
+	// the values will have to be absolute values as we want the amplitude not the waveform
+	for(j=0;j<5;j++) // finds the loudest chamber
 	{
 		if (abs(cham[note]) >= abs(cham[j]))
 			note = j;
-		if (abs(cham[note]) < 550)
-			note = 5;
 	}
+		if (abs(cham[note]) < thresh) // creates the threshold for noise
+			note = 5;
 	return note;
 }
 
 void silence()
 {
 	// send end note midi
+	Serial.write(0x90);
+	Serial.write(pitch[chamber]);
+	Serial.write(0x00);
 }
 
 void playnote(chamber,blow)
@@ -64,8 +81,21 @@ void playnote(chamber,blow)
 	lastnote = note;
 	// send endnote lastnote
 	if(blow == TRUE)
-		//play blow note on cham[note]
+		//silence last note, unsure if note needs to be same as last note or not
+		Serial.write(0x90);
+		Serial.write(pitch[chamber]);
+		Serial.write(0x00)	;
+		//play blow note on for the curent active chamber
+		Serial.write(0x90);
+		Serial.write(pitch[chamber]);
+		Serial.write(0x45);
 	else
-		//play suck note on cham[note]
-	
+		//silence last note, unsure if note needs to be same as last note or not
+		Serial.write(0x90);
+		Serial.write(pitch[chamber + 5]);
+		Serial.write(0x00);	
+		//play blow note on for the curent active chamber
+		Serial.write(0x90);
+		Serial.write(pitch[chamber + 5]);
+		Serial.write(0x45);
 }
